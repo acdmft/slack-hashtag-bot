@@ -7,7 +7,7 @@ const { saveToNotion, getPermalink } = require("./utils");
 // Initialize ExpressReceiver
 const receiver = new ExpressReceiver({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
-  endpoints: "/slack/events",
+  endpoints: { events: "/slack/events", commands: "/slack/commands" },
   processBeforeResponse: true,
 });
 

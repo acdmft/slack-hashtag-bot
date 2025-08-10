@@ -1,12 +1,21 @@
-const { App } = require("@slack/bolt");
+const { App, ExpressReceiver } = require("@slack/bolt");
 require("dotenv").config();
 const axios = require("axios");
 const { saveToNotion, getPermalink } = require("./utils");
+const express = require('express');
+
+// Initialize ExpressReceiver
+const receiver = new ExpressReceiver({
+  signingSecret: process.env.SLACK_SIGNING_SECRET,
+  endpoints: '/slack/events',
+  processBeforeResponse: true
+})
 
 // Initialize Slack Bolt app
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
-  signingSecret: process.env.SLACK_SIGNING_SECRET,
+  receiver
+  // signingSecret: process.env.SLACK_SIGNING_SECRET,
   // socketMode:true, // enable the following to use socket mode
   // appToken: process.env.SLACK_APP_TOKEN
 });
@@ -32,8 +41,16 @@ app.message(/#record/, async ({ message, context, say }) => {
   }
 });
 
-(async () => {
-  const port = 3000;
-  await app.start(process.env.port || port);
-  console.log(`⚡️ Slack Bolt app is running on port ${port}!`);
-})();
+// Catch-all for unrecognized events
+app.event(/.*/, async ({ event, ack }) => {
+  await ack();
+  console.log('Unrecognized event received:', JSON.stringify(event, null, 2));
+});
+
+// Start Express server
+const server = express();
+server.use('/slack/events', receiver.router);
+
+server.listen(process.env.PORT || 3000, () => {
+  console.log('Slack bot is running on port 3000');
+});

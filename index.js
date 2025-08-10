@@ -48,9 +48,16 @@ app.event(/.*/, async ({ event, ack }) => {
 });
 
 // Start Express server
-const server = express();
-server.use('/slack/events', receiver.router);
+// const server = express();
+// server.get('/', (req, res) => res.send('Server is running'));
+// server.use('/slack/event', receiver.router);
 
-server.listen(process.env.PORT || 3000, () => {
-  console.log('Slack bot is running on port 3000');
-});
+// server.listen(process.env.PORT || 3000, () => {
+//   console.log('Slack bot is running on port 3000');
+// });
+// Start the Express server via Bolt
+(async () => {
+  const port = process.env.PORT || 3000;
+  await app.start(port);
+  console.log(`⚡️ Slack Bolt app is running on port ${port}`);
+})();

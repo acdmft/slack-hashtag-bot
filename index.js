@@ -2,19 +2,19 @@ const { App, ExpressReceiver } = require("@slack/bolt");
 require("dotenv").config();
 const axios = require("axios");
 const { saveToNotion, getPermalink } = require("./utils");
-const express = require('express');
+// const express = require('express');
 
 // Initialize ExpressReceiver
 const receiver = new ExpressReceiver({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
-  endpoints: '/slack/events',
-  processBeforeResponse: true
-})
+  endpoints: "/slack/events",
+  processBeforeResponse: true,
+});
 
 // Initialize Slack Bolt app
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
-  receiver
+  receiver,
   // signingSecret: process.env.SLACK_SIGNING_SECRET,
   // socketMode:true, // enable the following to use socket mode
   // appToken: process.env.SLACK_APP_TOKEN
@@ -33,7 +33,7 @@ app.message(/#record/, async ({ message, context, say }) => {
   try {
     const permalink = await getPermalink(app, message.channel, message.ts);
     if (!permalink) return;
-    await saveToNotion(message, '#record', permalink, []);
+    await saveToNotion(message, "#record", permalink, []);
     say("Record this! that command works!");
   } catch (error) {
     console.log("err");
@@ -44,7 +44,7 @@ app.message(/#record/, async ({ message, context, say }) => {
 // Catch-all for unrecognized events
 app.event(/.*/, async ({ event, ack }) => {
   await ack();
-  console.log('Unrecognized event received:', JSON.stringify(event, null, 2));
+  console.log("Unrecognized event received:", JSON.stringify(event, null, 2));
 });
 
 // Start Express server
@@ -57,6 +57,16 @@ app.event(/.*/, async ({ event, ack }) => {
 // });
 // Start the Express server via Bolt
 (async () => {
+  if (!process.env.SLACK_BOT_TOKEN) {
+    throw new Error(
+      "Missing SLACK_BOT_TOKEN (should start with xoxb-). Set it in Railway Variables."
+    );
+  }
+  if (!process.env.SLACK_SIGNING_SECRET) {
+    throw new Error(
+      "Missing SLACK_SIGNING_SECRET. Set it in Railway Variables."
+    );
+  }
   const port = process.env.PORT || 3000;
   await app.start(port);
   console.log(`⚡️ Slack Bolt app is running on port ${port}`);

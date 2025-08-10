@@ -41,7 +41,7 @@ app.command("/knowledge", async ({ command, ack, say }) => {
   }
 });
 
-app.message(/#record/, async ({ message, context, say }) => {
+app.message(/#lucc/, async ({ message, context, say }) => {
   try {
     const permalink = await getPermalink(app, message.channel, message.ts);
     if (!permalink) return;
@@ -54,20 +54,12 @@ app.message(/#record/, async ({ message, context, say }) => {
 });
 
 // Catch-all for unrecognized events
-app.event(/.*/, async ({ event, ack }) => {
-  await ack();
-  console.log("Unrecognized event received:", JSON.stringify(event, null, 2));
-});
-
-// Start Express server
-// const server = express();
-// server.get('/', (req, res) => res.send('Server is running'));
-// server.use('/slack/event', receiver.router);
-
-// server.listen(process.env.PORT || 3000, () => {
-//   console.log('Slack bot is running on port 3000');
+// app.event(/.*/, async ({ event, ack }) => {
+//   await ack();
+//   console.log("Unrecognized event received:", JSON.stringify(event, null, 2));
 // });
-// Start the Express server via Bolt
+
+
 (async () => {
   
   const port = process.env.PORT || 3000;

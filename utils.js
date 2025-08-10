@@ -41,7 +41,7 @@ async function saveToNotion(message, hashtag, permalink, replies) {
       },
       { headers: notionHeaders }
     );
-    console.log("Saved to Notion:", response.data);
+    // console.log("Saved to Notion:", response.data);
   } catch (error) {
     console.error(
       "Error saving to Notion:",

@@ -3,17 +3,29 @@ require("dotenv").config();
 const axios = require("axios");
 const { saveToNotion, getPermalink } = require("./utils");
 // const express = require('express');
+const botToken = process.env.SLACK_BOT_TOKEN;
+const signingSecret = process.env.SLACK_SIGNING_SECRET;
 
+if (!process.env.SLACK_BOT_TOKEN) {
+    throw new Error(
+      "Missing SLACK_BOT_TOKEN (should start with xoxb-). Set it in Railway Variables."
+    );
+  }
+  if (!process.env.SLACK_SIGNING_SECRET) {
+    throw new Error(
+      "Missing SLACK_SIGNING_SECRET. Set it in Railway Variables."
+    );
+  }
 // Initialize ExpressReceiver
 const receiver = new ExpressReceiver({
-  signingSecret: process.env.SLACK_SIGNING_SECRET,
+  signingSecret: signingSecret,
   endpoints: { events: "/slack/events", commands: "/slack/commands" },
   processBeforeResponse: true,
 });
 
 // Initialize Slack Bolt app
 const app = new App({
-  token: process.env.SLACK_BOT_TOKEN,
+  token: botToken,
   receiver,
   // signingSecret: process.env.SLACK_SIGNING_SECRET,
   // socketMode:true, // enable the following to use socket mode
@@ -57,16 +69,7 @@ app.event(/.*/, async ({ event, ack }) => {
 // });
 // Start the Express server via Bolt
 (async () => {
-  if (!process.env.SLACK_BOT_TOKEN) {
-    throw new Error(
-      "Missing SLACK_BOT_TOKEN (should start with xoxb-). Set it in Railway Variables."
-    );
-  }
-  if (!process.env.SLACK_SIGNING_SECRET) {
-    throw new Error(
-      "Missing SLACK_SIGNING_SECRET. Set it in Railway Variables."
-    );
-  }
+  
   const port = process.env.PORT || 3000;
   await app.start(port);
   console.log(`⚡️ Slack Bolt app is running on port ${port}`);

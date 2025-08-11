@@ -7,15 +7,13 @@ const botToken = process.env.SLACK_BOT_TOKEN;
 const signingSecret = process.env.SLACK_SIGNING_SECRET;
 
 if (!process.env.SLACK_BOT_TOKEN) {
-    throw new Error(
-      "Missing SLACK_BOT_TOKEN (should start with xoxb-). Set it in Railway Variables."
-    );
-  }
-  if (!process.env.SLACK_SIGNING_SECRET) {
-    throw new Error(
-      "Missing SLACK_SIGNING_SECRET. Set it in Railway Variables."
-    );
-  }
+  throw new Error(
+    "Missing SLACK_BOT_TOKEN (should start with xoxb-). Set it in Railway Variables."
+  );
+}
+if (!process.env.SLACK_SIGNING_SECRET) {
+  throw new Error("Missing SLACK_SIGNING_SECRET. Set it in Railway Variables.");
+}
 // Initialize ExpressReceiver
 const receiver = new ExpressReceiver({
   signingSecret: signingSecret,
@@ -32,10 +30,11 @@ const app = new App({
   // appToken: process.env.SLACK_APP_TOKEN
 });
 
-app.command("/knowledge", async ({ command, ack, say }) => {
+app.command("/hashtags", async ({ command, ack, say }) => {
+  console.log("command knowledge");
   try {
     await ack();
-    say("Yeahh ! The command works !");
+    say("Les hashtags disponibles sont: #lucc, #cubb, #histo, #ddd");
   } catch (error) {
     console.log("err: ", error);
   }
@@ -45,23 +44,23 @@ app.message(/#lucc/, async ({ message, context, say }) => {
   try {
     const permalink = await getPermalink(app, message.channel, message.ts);
     if (!permalink) return;
-    await saveToNotion(message, "#record", permalink, []);
-    say("Record this! that command works!");
+    await saveToNotion(message, "#lucc", permalink, []);
+    say("Le message a été enregistré dans Notion!");
   } catch (error) {
     console.log("err");
     console.error(error);
   }
 });
 
-// Catch-all for unrecognized events
-// app.event(/.*/, async ({ event, ack }) => {
-//   await ack();
-//   console.log("Unrecognized event received:", JSON.stringify(event, null, 2));
-// });
-
+app.event("message", async ({ client, event, logger }) => {
+  console.log("message event");
+  // logger.info(event);
+  if (event.thread_ts) {
+    console.log('thread reply')
+  }
+});
 
 (async () => {
-  
   const port = process.env.PORT || 3000;
   await app.start(port);
   console.log(`⚡️ Slack Bolt app is running on port ${port}`);
